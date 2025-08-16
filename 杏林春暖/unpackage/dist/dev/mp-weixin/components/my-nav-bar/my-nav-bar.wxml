@@ -1,0 +1,1 @@
+<view class="custom-nav-bar data-v-75ed7c30" style="{{'padding-top:' + b}}"><view class="nav-content data-v-75ed7c30"><text class="title data-v-75ed7c30">{{a}}</text></view></view><view class="nav-placeholder data-v-75ed7c30" style="{{'height:' + c}}"></view>

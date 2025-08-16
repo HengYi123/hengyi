@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "用户主页",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "my-nav-bar": "../../components/my-nav-bar/my-nav-bar",
+    "my-tab-bar": "../../components/my-tab-bar/my-tab-bar"
+  }
+}

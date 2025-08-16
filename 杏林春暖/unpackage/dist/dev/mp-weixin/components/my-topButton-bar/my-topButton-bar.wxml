@@ -1,0 +1,1 @@
+<view class="{{['back-to-top-btn', 'data-v-c7388e34', b]}}" hidden="{{!c}}" bindtap="{{d}}"><view class="image-box data-v-c7388e34"><image src="{{a}}" mode="aspectFit" class="arrow-icon data-v-c7388e34"/></view></view>

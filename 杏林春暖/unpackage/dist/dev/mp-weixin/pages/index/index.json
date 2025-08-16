@@ -1,0 +1,13 @@
+{
+  "navigationBarTitleText": "中药材大全",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "my-nav-bar": "../../components/my-nav-bar/my-nav-bar",
+    "my-search-bar": "../../components/my-search-bar/my-search-bar",
+    "my-carousel-bar": "../../components/my-carousel-bar/my-carousel-bar",
+    "my-container-bar": "../../components/my-container-bar/my-container-bar",
+    "my-content-bar": "../../components/my-content-bar/my-content-bar",
+    "my-top-button-bar": "../../components/my-topButton-bar/my-topButton-bar",
+    "my-tab-bar": "../../components/my-tab-bar/my-tab-bar"
+  }
+}

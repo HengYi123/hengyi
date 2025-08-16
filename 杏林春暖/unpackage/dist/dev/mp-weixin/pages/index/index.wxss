@@ -1,0 +1,1 @@
+.page-container.data-v-1cf27b2a{display:flex;flex-direction:column;background-color:#e4e4e4;height:calc(100vh - var(--nav-total-height))}.content-container.data-v-1cf27b2a{overflow:auto;flex:1;transform:translateZ(0)}.header-area.data-v-1cf27b2a{background-color:#e4e4e4}.content-box.data-v-1cf27b2a{padding-top:10rpx;background:linear-gradient(135deg,#f8f4e5,#e8f5e9)}
