@@ -53,20 +53,29 @@
 			
 			// 滚动事件处理
 			handleMainScroll(e) {
-				// 获取当前滚动位置
-			    const scrollTop = e.detail.scrollTop;
-				// 添加节流控制
-				const now = Date.now();
-				if (now - this.lastScrollTime < 100) return;
-				this.lastScrollTime = now;
-				   
-				// 滚动超过150px显示返回按钮
-				this.showBackToTop = scrollTop > 150;
-					
-				// 调试输出
-				console.log(`滚动位置: ${scrollTop}, 显示状态: ${this.showBackToTop}`);
-				// 更新当前滚动位置
-				this.scrollTop = scrollTop;
+				 // 获取当前滚动位置
+				    const scrollTop = e.detail.scrollTop;
+				    // 添加节流控制
+				    const now = Date.now();
+				    if (now - this.lastScrollTime < 100) return;
+				    this.lastScrollTime = now;
+				       
+				    // 滚动超过150px显示返回按钮
+				    this.showBackToTop = scrollTop > 150;
+				        
+				    // 调试输出
+				    console.log(`滚动位置: ${scrollTop}, 显示状态: ${this.showBackToTop}`);
+				    // 更新当前滚动位置
+				    this.scrollTop = scrollTop;
+				    
+				    // 新增：检查是否滚动到底部
+				    const scrollHeight = e.detail.scrollHeight;
+				    const clientHeight = this.scrollViewHeight;
+				    
+				    // 距离底部50px时触发加载更多
+				    if (scrollHeight - scrollTop - clientHeight < 50) {
+				        uni.$emit('scrollToBottom');
+				    }
 			},
 			
 			// 返回顶部操作

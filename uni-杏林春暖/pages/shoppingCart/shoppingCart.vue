@@ -263,7 +263,7 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		height: calc(100vh - 250rpx);
+		height: calc(100vh - 400rpx);
 		padding: 20rpx;
 		text-align: center;
 		overflow: hidden;
@@ -277,8 +277,9 @@
 	}
 	
 	.empty-text {
-		font-size: 36rpx;
+		font-size: 42rpx;
 		font-weight: bold;
+		line-height: 30rpx;
 		color: #6b6b6b;
 		margin-bottom: 15rpx;
 	}
@@ -286,7 +287,7 @@
 	.empty-tip {
 		font-size: 28rpx;
 		color: #949494;
-		margin-bottom: 40rpx;
+		margin-bottom: 30rpx;
 	}
 	
 	.go-shopping-button {

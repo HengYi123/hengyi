@@ -24,24 +24,22 @@
 				</view>
 			</view>
 		</view>
+		
 		<view class="visible-container">
 			<!-- 瀑布流列容器：v-for生成指定列数 -->
 			<view class="column" v-for="(col, colIndex) in columnData" :key="colIndex">
-				<!-- 动态绑定ID用于高度测量 -->
 				<view
-				v-for="item in col"
-				:key="item.id"
-				class="medicine-box"
-				@click="goToContent(item.name)"
-				:id="'box-'+item.id"
+					v-for="item in col"
+					:key="item.id"
+					class="medicine-box"
+					@click="goToContent(item.name)"
 				>
-					<!-- 图片加载后更新高度 -->
+					<!-- 图片 -->
 					<image
-					  :src="getMedicineImage(item.name)"
-					  mode="aspectFill"
-					  class="medicine-image"
-					  lazy-load="true"
-					  @load="e => updateItemHeight(e, item.id)"
+						:src="getMedicineImage(item.name)"
+						mode="aspectFill"
+						class="medicine-image"
+						lazy-load="true"
 					></image>
 					<!-- 商品信息 -->
 					<view class="medicine-info">
@@ -57,10 +55,10 @@
 					</view>
 				</view>
 			</view>
-			<!-- 加载指示器 -->
-			<view v-if="isLoading" class="loading-indicator">加载中 {{ getLoadingProgress() }}%</view>
-			<view v-if="!hasMore" class="no-more-indicator">没有更多了</view>
 		</view>
+		<!-- 加载指示器 -->
+		<view v-if="isLoading" class="loading-indicator">加载中 {{ getLoadingProgress() }}%</view>
+		<view v-if="!hasMore" class="no-more-indicator">没有更多了</view>
 	</view>
 </template>
 
@@ -74,212 +72,96 @@
 				columnCount: 2,          	// 列数
 				columnData: [[], []], 	 	// 确保每列都有数组容器
 				allMedicines: [],        	// 所有药品数据
-				scrollViewHeight: 600,   	// 滚动容器高度
-				scrollTop: 0,            	// 滚动位置
-				itemHeight: 360,         	// 每个项目预估高度(px)
-				visibleCount: 0,         	// 可视区域内显示的项目数
-				startIndex: 0,          	// 当前显示的起始索引
-				offsetTop: 0,            	// 内容偏移量
 				isLoading: false,			// 加载状态标志
 				hasMore: true,           	// 是否有更多数据
 				currentPage: 1,          	// 当前页码
-				pageSize: 40,            	// 每页数据量
-				heightTimers: {},        	// 存储高度计算定时器
+				pageSize: 20,            	// 每页数据量
 				showContentSkeleton: true, 	// 骨架屏显示状态
-				loadingProgress: 0          // 加载进度百分比
+				loadingProgress: 0,         // 加载进度百分比
+				loadedIds: new Set()		// 已加载ID集合（用于去重）
 			};
 		},
 	
 		mounted() {
 			// 初始加载数据
-			this.loadMedicines();	// 组件挂载立即加载数据
-			this.initScrollView();	// 初始化滚动容器尺寸
-			console.log("药材总数:", nameData.length);  
+			this.loadMedicines();
+			console.log("药材总数:", nameData.length);
+			
+			// 添加滚动监听
+			uni.$on('scrollToBottom', this.handleScrollToBottom);
 		},
-	
-		computed: {
-			// 计算列表总高度
-			totalHeight() {
-				return this.allMedicines.length * this.itemHeight;
-			}
+		
+		beforeDestroy() {
+			// 移除滚动监听
+			uni.$off('scrollToBottom', this.handleScrollToBottom);
 		},
     
 		methods: {
+			// 处理滚动到底部事件
+			handleScrollToBottom() {
+				if (!this.isLoading && this.hasMore) {
+					this.loadMedicines();
+				}
+			},
 			
 			goToContent(name){
 				uni.navigateTo({
 					url: `/pages/content/content?keyword=${name}&source=index`
 				});
 			},
-			
-			// 初始化滚动容器
-			initScrollView() {
-				// 使用选择器获取实际高度
-				this.$nextTick(() => {
-					const query = uni.createSelectorQuery().in(this);
-					query.select('.virtual-scroll-container').boundingClientRect(rect => {
-						if (rect) {
-							this.scrollViewHeight = rect.height;
-							// 计算可视项数量：容器高度/单项高度 + 缓冲区
-							this.visibleCount = Math.max(1, Math.ceil(this.scrollViewHeight / this.itemHeight) + 5);
-						}
-					}).exec();
-				});
-			},
-	  
-			// 计算可视区域                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-			calculateVisibleRange(scrollTop) {
-				if (Date.now() - this.lastScrollTime < 100) return; // 100ms节流
-				const itemsPerRow = this.columnCount; // 每行项目数
-				
-				// 计算结束索引（基于可视行数+缓冲）
-				const visibleRows = Math.ceil(this.scrollViewHeight / this.itemHeight);
-				const visibleItemsCount = visibleRows * this.columnCount; 
-				this.startIndex = Math.max(0, 
-					Math.floor(scrollTop / this.itemHeight) * itemsPerRow - 10 // 缓冲10个项目
-				);
-				this.endIndex = this.allMedicines.length; // 直接渲染所有已加载数据
-				
-				// 确保初始化 lastStartIndex
-				if (typeof this.lastStartIndex === 'undefined') {
-					this.lastStartIndex = this.startIndex;
-				}
-				
-				// 仅当索引变化超过30个项时更新
-				if (Math.abs(this.startIndex - this.lastStartIndex) > 30) {
-				  this.updateVisibleItems();
-				  this.lastStartIndex = this.startIndex;
-				}
-				
-				// 检查是否需要加载更多
-				if (this.shouldLoadMore()) {
-				  this.loadMedicines();
-				}
-				
-				// 动态偏移量
-				this.offsetTop = this.startIndex * this.itemHeight;
-			},
-      
-			// 更新可见项目
-			updateVisibleItems() {
-				// 按列清空旧数据
-				this.columnData.forEach(col => col.length = 0);
-				const safeEndIndex = Math.min(this.endIndex, this.allMedicines.length);
-				const visibleItems = this.allMedicines.slice(this.startIndex, safeEndIndex);
-				   
-				// 确保每列都是有效数组
-				for (let i = 0; i < this.columnCount; i++) {
-					if (!Array.isArray(this.columnData[i])) {
-					 this.columnData[i] = []; // 安全初始化
-					}
-					this.columnData[i].length = 0; // 清空列内容
-				}
-				   
-				// 动态分列算法
-				visibleItems.forEach((item, index) => {
-					const columnIndex = index % this.columnCount;
-					this.columnData[columnIndex].push({
-						...item,
-						id: `item-${this.startIndex + index}`
-					});
-				});
-			},
 		
-			// 动态测量项目高度
-			updateItemHeight(e, id) {
-				clearTimeout(this.heightTimers[id]);
-				this.heightTimers[id] = setTimeout(() => {
-					uni.createSelectorQuery()
-						.in(this)
-						.select(`#box-${id}`)
-						.boundingClientRect(rect => {
-						// 动态调整全局项高度基准
-						if (rect && rect.height > this.itemHeight) {
-							this.itemHeight = rect.height;
-						}}).exec();
-				}, 200);
-			},
-	  
-			// 判断是否需要加载更多
-			shouldLoadMore() {
-				const remainingItems = this.allMedicines.length - this.endIndex;
-				return(
-					!this.isLoading &&
-					this.hasMore &&
-					remainingItems > 0
-				);
-			},
-      
 			// 加载药品数据
 			async loadMedicines() {
-				this.showContentSkeleton = true;
-				this.loadingProgress = 0; // 重置进度
 				if (this.isLoading || !this.hasMore) return;
-				this.loadQueue++;
-				this.isLoading = true;
-				
-				try {
-					const start = (this.currentPage - 1) * this.pageSize;
-					// 先检查是否还有数据可加载
-					if (start >= nameData.length) {
-						this.hasMore = false;
-						return;
-					}
-					
-					// 模拟加载进度
-					const totalPages = Math.ceil(nameData.length / this.pageSize);
-					let currentProgress = 0;
-					
-					for (let page = 1; page <= totalPages; page++) {
-						// 计算实际可加载的数据量
-						const end = Math.min(start + this.pageSize, nameData.length);
-						const names = nameData.slice(start, end);
-					  
-						// 并发请求API数据
-						const newData = await Promise.all(names.map(async (name) => {
-							const apiData = await this.cachedRequest(name);
-						  
-							return {
-								id: `${this.currentPage}-${name}`,	// 唯一ID生成规则
-								name,
-								image: this.getMedicineImage(name),
-								flavor: apiData?.flavor || apiData?.property || '暂无数据',
-								effect: apiData?.effect || apiData?.function || '暂无数据'
-							};
-						}));
-						
-						// 合并数据（确保不重复）
-						this.allMedicines = [...this.allMedicines, ...newData];
-						this.currentPage++;
-						
-						// 更新瀑布流布局
-						this.$nextTick(() => {
-							this.calculateVisibleRange(this.scrollTop);
-							this.updateVisibleItems();
-						});
-					  
-						// 更新加载进度
-						this.loadingProgress = Math.min(
-							Math.floor((this.allMedicines.length / nameData.length) * 100),
-							100
-						);
-						
-						// 自动加载下一页（递归调用）
-						if (this.allMedicines.length < nameData.length) {
-							this.$nextTick(() => {
-							this.loadMedicines();
-						});
-						} else {
-							this.hasMore = false;
-							console.log('所有药材数据加载完成');
-						}
-						console.log("加载数据量:", newData.length);
-						console.log("当前总数据:", this.allMedicines.length);
-						// 更新进度
-						currentProgress = Math.floor((this.allMedicines.length / nameData.length) * 100);
-						this.loadingProgress = Math.min(currentProgress, 100);
-						await this.delay(100); // 添加延迟使进度可见
-					}
+				    
+				    this.isLoading = true;
+				    this.showContentSkeleton = true;
+				    
+				    try {
+				        // 直接使用所有nameData，不再分页
+				        const newData = await Promise.all(
+				            nameData.map(async (name) => {
+				                // 检查是否已加载过该数据
+				                if (this.loadedIds.has(name)) {
+				                    return null; // 已加载则跳过
+				                }
+				                
+				                const apiData = await this.cachedRequest(name);
+				                this.loadedIds.add(name); // 标记为已加载
+				                
+				                return {
+				                    id: name, // 直接使用name作为ID
+				                    name,
+				                    image: this.getMedicineImage(name),
+				                    flavor: apiData?.flavor || apiData?.property || '暂无数据',
+				                    effect: apiData?.effect || apiData?.function || '暂无数据'
+				                };
+				            })
+				        );
+				        
+				        // 过滤掉null值和无效数据
+				        const validNewData = newData.filter(item => item !== null && item.name);
+				        
+				        // 合并数据
+				        this.allMedicines = [...this.allMedicines, ...validNewData];
+				        
+				        // 更新瀑布流布局
+				        this.updateVisibleItems();
+				        
+				        // 更新加载进度
+				        this.loadingProgress = Math.min(
+				            Math.floor((this.loadedIds.size / nameData.length) * 100),
+				            100
+				        );
+				        
+				        console.log("加载数据量:", validNewData.length);
+				        console.log("当前总数据:", this.allMedicines.length);
+				        
+				        // 检查是否还有更多数据
+				        if (this.loadedIds.size >= nameData.length) {
+				            this.hasMore = false;
+				            console.log('所有药材数据加载完成');
+				        }
 				} catch (error) {
 					console.error('加载失败', error);
 					// 添加错误处理UI反馈
@@ -289,27 +171,43 @@
 						duration: 2000
 					});
 				} finally {
-				  this.loadQueue--;
-				  this.isLoading = false;
-				  // 关闭骨架屏
-				  setTimeout(() => {
-					  this.showContentSkeleton = false;
-				  }, 500);
+					this.isLoading = false;
+					// 关闭骨架屏
+					setTimeout(() => {
+						this.showContentSkeleton = false;
+					}, 500);
 				}	
 			},
-		
-			// 简单延迟函数
-			delay(ms) {
-				return new Promise(resolve => setTimeout(resolve, ms));
+			
+			// 更新可见项目（瀑布流分列）
+			updateVisibleItems() {
+				// 重置列数据
+				    this.columnData = Array.from({ length: this.columnCount }, () => []);
+				    const columnHeights = Array(this.columnCount).fill(0);
+				    
+				    // 按列高度动态分配项目
+				    this.allMedicines.forEach(item => {
+				        // 找出当前高度最小的列
+				        const minHeightIndex = columnHeights.indexOf(Math.min(...columnHeights));
+				        
+				        // 将项目添加到该列
+				        this.columnData[minHeightIndex].push(item);
+				        
+				        // 估算并更新该列的高度（假设每个项目高度大约为420rpx）
+				        columnHeights[minHeightIndex] += 420;
+				    });
+				    
+				    // 强制更新视图
+				    this.$forceUpdate();
 			},
-      
+		
 			// 获取药材图片
 			getMedicineImage(name) {
 				const imagePath = `/static/herb/${name}.jpg`;
 				return imagePath;
 			},
 		
-			//加载性能指示器
+			// 加载进度指示器
 			getLoadingProgress() {
 				return Math.min(
 					Math.floor((this.allMedicines.length / nameData.length) * 100), 
@@ -370,6 +268,7 @@
 </script>
 
 <style>
+	/* 样式部分保持不变，与您原来的代码一致 */
 	.container {
 		display: flex;
 		flex-direction: column;
@@ -377,6 +276,7 @@
 		width: 100%;
 		min-height: 100vh; 
 		position: relative;
+		padding-bottom: 75rpx;
 	}
   
 	.skeleton-container {
@@ -472,17 +372,13 @@
 		100% { background-position: 0 50%; }
 	}
   
-	.virtual-scroll-container {
-		position: relative;
-		height: 100%;
-	}
-  
 	.visible-container {
 		position: relative;
 		display: flex;
 		width: 100%;
 		transform: translateZ(0); 	/* 开启GPU加速 */
 		will-change: transform;     /* 提示浏览器提前优化 */
+		margin-bottom: 0; /* 移除底部外边距 */
 	}
   
 	.text-container {
@@ -499,11 +395,6 @@
 		padding: 0 10rpx;
 		box-sizing: border-box; /* 包含padding在宽度内 */
 	}
-  
-  .column-container {
-		display: flex;
-		width: 100%;
-    }
 	
 	.text-container {
 	    display: block;
@@ -549,15 +440,19 @@
   
 	.loading-indicator,
 	.no-more-indicator {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
+		position: relative; /* 改为相对定位 */
+		bottom: auto;
+		left: auto;
+		right: auto;
 		text-align: center;
 		padding: 20rpx;
 		color: #999;
-		background: rgba(228, 228, 228, 0.9); /* 半透明背景 */
+		background: rgba(228, 228, 228, 0.9);
 		z-index: 60;
+		margin-bottom: 20rpx;
+		width: 100%;
+		box-sizing: border-box;
+		margin-bottom: 100rpx;
 	}
 	
 	.medicine-effect {
