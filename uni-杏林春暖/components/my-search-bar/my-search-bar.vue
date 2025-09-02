@@ -9,7 +9,6 @@
 					:duration="300"
 					:mode-class="animationDirection"
 					:styles="transitionStyles">
-						<!-- 6.动画期间禁用输入，7.动态占位符 -->
 						<input 
 							type="text"
 							ref="searchInput"
@@ -26,7 +25,6 @@
 		</view>
 		<view class="suggestion-list" v-if="matchedItems.length>0">
 			<scroll-view scroll-y="true" class="list-container">
-				<!-- 4.点击选择项 -->
 				<view
 					v-for="(item,index) in matchedItems"
 					:key="index"
@@ -53,10 +51,10 @@
 				animationDirection:'slide-top',	// 动画方向（初始向上滑出）
 				isAnimating: false,     // 动画状态锁（防止动画冲突）
 				transitionStyles: {		// 动画容器样式
-				        display: 'flex',
-				        alignItems: 'center',
-				        height: '100%',
-				        width: '100%',
+					display: 'flex',
+					alignItems: 'center',
+					height: '100%',
+					width: '100%',
 				},
 				inputValue:'',
 				matchedItems:[],	// 匹配的药材列表
@@ -240,7 +238,7 @@
 	}  
 	
 	.suggestion-list {
-	    position: absolute; /* 改为绝对定位 */
+	    position: absolute; 
 	    top: 85%; /* 从搜索栏底部开始 */
 	    left: 0;
 	    right: 0;

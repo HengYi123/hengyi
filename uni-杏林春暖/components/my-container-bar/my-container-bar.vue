@@ -25,7 +25,7 @@
 		color: #2E7D32; 
 		text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 		letter-spacing: 2rpx;
-		position: sticky; /* 改为粘性定位（滚动时固定顶部）*/
+		position: sticky; /* 粘性定位（滚动时固定顶部）*/
 		top: 0;
 		padding-left: 20rpx;    
 	}

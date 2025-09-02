@@ -113,55 +113,53 @@
 			// 加载药品数据
 			async loadMedicines() {
 				if (this.isLoading || !this.hasMore) return;
-				    
-				    this.isLoading = true;
-				    this.showContentSkeleton = true;
-				    
-				    try {
-				        // 直接使用所有nameData，不再分页
-				        const newData = await Promise.all(
-				            nameData.map(async (name) => {
-				                // 检查是否已加载过该数据
-				                if (this.loadedIds.has(name)) {
-				                    return null; // 已加载则跳过
-				                }
-				                
-				                const apiData = await this.cachedRequest(name);
-				                this.loadedIds.add(name); // 标记为已加载
-				                
-				                return {
-				                    id: name, // 直接使用name作为ID
-				                    name,
-				                    image: this.getMedicineImage(name),
-				                    flavor: apiData?.flavor || apiData?.property || '暂无数据',
-				                    effect: apiData?.effect || apiData?.function || '暂无数据'
-				                };
-				            })
-				        );
-				        
-				        // 过滤掉null值和无效数据
-				        const validNewData = newData.filter(item => item !== null && item.name);
-				        
-				        // 合并数据
-				        this.allMedicines = [...this.allMedicines, ...validNewData];
-				        
-				        // 更新瀑布流布局
-				        this.updateVisibleItems();
-				        
-				        // 更新加载进度
-				        this.loadingProgress = Math.min(
-				            Math.floor((this.loadedIds.size / nameData.length) * 100),
-				            100
-				        );
-				        
-				        console.log("加载数据量:", validNewData.length);
-				        console.log("当前总数据:", this.allMedicines.length);
-				        
-				        // 检查是否还有更多数据
-				        if (this.loadedIds.size >= nameData.length) {
-				            this.hasMore = false;
-				            console.log('所有药材数据加载完成');
-				        }
+				this.isLoading = true;
+				this.showContentSkeleton = true;
+				try {
+					// 直接使用所有nameData，不再分页
+					const newData = await Promise.all(
+						nameData.map(async (name) => {
+							// 检查是否已加载过该数据
+							if (this.loadedIds.has(name)) {
+								return null; // 已加载则跳过
+							}
+							
+							const apiData = await this.cachedRequest(name);
+							this.loadedIds.add(name); // 标记为已加载
+							
+							return {
+								id: name, // 直接使用name作为ID
+								name,
+								image: this.getMedicineImage(name),
+								flavor: apiData?.flavor || apiData?.property || '暂无数据',
+								effect: apiData?.effect || apiData?.function || '暂无数据'
+							};
+						})
+					);
+					
+					// 过滤掉null值和无效数据
+					const validNewData = newData.filter(item => item !== null && item.name);
+					
+					// 合并数据
+					this.allMedicines = [...this.allMedicines, ...validNewData];
+					
+					// 更新瀑布流布局
+					this.updateVisibleItems();
+					
+					// 更新加载进度
+					this.loadingProgress = Math.min(
+						Math.floor((this.loadedIds.size / nameData.length) * 100),
+						100
+					);
+					
+					console.log("加载数据量:", validNewData.length);
+					console.log("当前总数据:", this.allMedicines.length);
+					
+					// 检查是否还有更多数据
+					if (this.loadedIds.size >= nameData.length) {
+						this.hasMore = false;
+						console.log('所有药材数据加载完成');
+					}
 				} catch (error) {
 					console.error('加载失败', error);
 					// 添加错误处理UI反馈
@@ -182,23 +180,23 @@
 			// 更新可见项目（瀑布流分列）
 			updateVisibleItems() {
 				// 重置列数据
-				    this.columnData = Array.from({ length: this.columnCount }, () => []);
-				    const columnHeights = Array(this.columnCount).fill(0);
-				    
-				    // 按列高度动态分配项目
-				    this.allMedicines.forEach(item => {
-				        // 找出当前高度最小的列
-				        const minHeightIndex = columnHeights.indexOf(Math.min(...columnHeights));
-				        
-				        // 将项目添加到该列
-				        this.columnData[minHeightIndex].push(item);
-				        
-				        // 估算并更新该列的高度（假设每个项目高度大约为420rpx）
-				        columnHeights[minHeightIndex] += 420;
-				    });
-				    
-				    // 强制更新视图
-				    this.$forceUpdate();
+				this.columnData = Array.from({ length: this.columnCount }, () => []);
+				const columnHeights = Array(this.columnCount).fill(0);
+				
+				// 按列高度动态分配项目
+				this.allMedicines.forEach(item => {
+					// 找出当前高度最小的列
+					const minHeightIndex = columnHeights.indexOf(Math.min(...columnHeights));
+					
+					// 将项目添加到该列
+					this.columnData[minHeightIndex].push(item);
+					
+					// 估算并更新该列的高度（假设每个项目高度大约为420rpx）
+					columnHeights[minHeightIndex] += 420;
+				});
+				
+				// 强制更新视图
+				this.$forceUpdate();
 			},
 		
 			// 获取药材图片
@@ -227,7 +225,7 @@
 					});
 				  
 					// 兼容两种响应结构
-					const res = response[1] ? response[1] : response; // 关键修复点
+					const res = response[1] ? response[1] : response;
 				  
 					// 增强验证逻辑
 					if (!res || res.statusCode !== 200 || !res.data || res.data.code !== 0) {
@@ -268,7 +266,6 @@
 </script>
 
 <style>
-	/* 样式部分保持不变，与您原来的代码一致 */
 	.container {
 		display: flex;
 		flex-direction: column;
@@ -378,7 +375,7 @@
 		width: 100%;
 		transform: translateZ(0); 	/* 开启GPU加速 */
 		will-change: transform;     /* 提示浏览器提前优化 */
-		margin-bottom: 0; /* 移除底部外边距 */
+		margin-bottom: 0;
 	}
   
 	.text-container {
@@ -390,7 +387,7 @@
 	}
   
 	.column {
-		flex: 0 0 50%; /* 固定宽度50%，不再自适应 */
+		flex: 0 0 50%; /* 固定宽度50% */
 		min-width: 0;
 		padding: 0 10rpx;
 		box-sizing: border-box; /* 包含padding在宽度内 */
@@ -440,7 +437,7 @@
   
 	.loading-indicator,
 	.no-more-indicator {
-		position: relative; /* 改为相对定位 */
+		position: relative;
 		bottom: auto;
 		left: auto;
 		right: auto;
