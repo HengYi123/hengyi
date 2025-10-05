@@ -17,7 +17,9 @@
             "delay" : 0
         },
         /* 模块配置 */
-        "modules" : {},
+        "modules" : {
+            "Geolocation" : {}
+        },
         /* 应用发布信息 */
         "distribute" : {
             /* android打包配置 */
@@ -43,7 +45,15 @@
             /* ios打包配置 */
             "ios" : {},
             /* SDK配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "geolocation" : {
+                    "tencent" : {
+                        "__platform__" : [ "ios", "android" ],
+                        "apikey_ios" : "OMEBZ-JYNEW-BX6RJ-Y63WC-JS4BE-4SB6C",
+                        "apikey_android" : "OMEBZ-JYNEW-BX6RJ-Y63WC-JS4BE-4SB6C"
+                    }
+                }
+            }
         }
     },
     /* 快应用特有相关 */
@@ -55,7 +65,12 @@
             "urlCheck" : false,
             "minified" : true
         },
-        "usingComponents" : true
+        "usingComponents" : true,
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "你的位置将用于获取收货地址"
+            }
+        }
     },
     "mp-alipay" : {
         "usingComponents" : true
@@ -69,5 +84,20 @@
     "uniStatistics" : {
         "enable" : false
     },
-    "vueVersion" : "3"
+    "vueVersion" : "3",
+	/* 小程序特有相关 */
+	"mp-weixin" : {
+		"appid" : "wxb809fe09b61cf46f",
+		"setting" : {
+			"urlCheck" : false
+		},
+		"usingComponents" : true,
+		"permission" : {
+			"scope.userFuzzyLocation":{
+				"desc":"位置信息效果展示"
+			}
+		},
+		"requiredPrivateInfos" : [ "getFuzzyLocation" ]
+	}
+
 }

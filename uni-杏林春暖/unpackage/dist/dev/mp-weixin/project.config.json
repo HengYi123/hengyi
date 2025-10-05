@@ -7,13 +7,13 @@
     "urlCheck": false,
     "es6": true,
     "postcss": false,
-    "minified": true,
+    "minified": false,
     "newFeature": true,
     "bigPackageSizeSupport": true
   },
   "compileType": "miniprogram",
   "libVersion": "",
-  "appid": "touristappid",
+  "appid": "wxb809fe09b61cf46f",
   "projectname": "uni-杏林春暖",
   "condition": {
     "search": {

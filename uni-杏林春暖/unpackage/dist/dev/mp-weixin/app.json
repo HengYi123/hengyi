@@ -4,7 +4,8 @@
     "pages/shoppingCart/shoppingCart",
     "pages/my/my",
     "pages/content/content",
-    "pages/map/map"
+    "pages/map/map",
+    "pages/my/zanZhu"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -12,5 +13,13 @@
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
   },
+  "permission": {
+    "scope.userFuzzyLocation": {
+      "desc": "位置信息效果展示"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getFuzzyLocation"
+  ],
   "usingComponents": {}
 }

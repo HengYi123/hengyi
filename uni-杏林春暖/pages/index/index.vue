@@ -8,7 +8,7 @@
 				<my-carousel-bar ref="carousel"></my-carousel-bar>
 			</view>
 				<my-container-bar></my-container-bar>
-				<!-- buffer-size=30优化渲染性能 -->
+				<!-- buffer-size=30，控制“缓冲区”的大小优化渲染性能 -->
 				<my-content-bar ref="content" :buffer-size="30" class="content-box">
 				</my-content-bar>
 		</view>

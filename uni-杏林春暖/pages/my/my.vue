@@ -17,7 +17,7 @@
 					<text class="user-data-text">账号ID：{{userInfo.openid || '无'}}</text>
 					<!-- 收货地址（点击跳转地图页） -->
 					<view class="address-row" @click="navigateToMap">
-						<text class="user-data-text">收货地址：{{userInfo.address || '请设置'}}</text>
+						<text class="user-data-text text-color">收货地址：{{userInfo.address || '请设置'}}</text>
 						<image 
 							src="/static/my/右箭头.png" 
 							class="location-icon">
@@ -49,8 +49,8 @@
 				<view class="about-content-box">
 					<text class="about-text">关于我们</text>
 				</view>
-				<view class="about-content-box">
-					<text class="about-text">打赏</text>
+				<view class="about-content-box" @click="toZanZhu">
+					<text class="about-text text-color">打赏</text>
 				</view>
 			</view>
 			<!-- 授权登录弹窗（条件渲染） -->
@@ -106,7 +106,9 @@
 				showAuthPopup: false,		// 控制授权弹窗显示
 				tempAvatar: '',          	// 临时存储选择的头像路径
 				tempNickname: '',          	// 临时存储输入的昵称
-				userInfo: {}, 			 	// 用户信息对象
+				userInfo: {
+					address: uni.getStorageSync('selectedAddress') || '', // 从本地存储读取地址
+				}, 			 	// 用户信息对象
 				// 订单管理入口配置
 				orderItems: [
 					{name: '待付款', icon: '/static/my/待付款.png'},
@@ -124,12 +126,40 @@
 				]
 			}
 		},
+		
+		onLoad() {
+			// 添加全局事件监听器
+			uni.$on('updateUserAddress', this.updateAddress);
+			// 页面加载时检查本地存储中是否有地址
+			const savedAddress = uni.getStorageSync('selectedAddress');
+			if (savedAddress) {
+				this.userInfo.address = savedAddress;
+			}
+		},
+		
+		onUnload() {
+			// 移除事件监听器
+			uni.$off('updateUserAddress', this.updateAddress);
+		},
+		
 		methods:{
 			// 跳转至地图页面
 			navigateToMap() {
 				uni.navigateTo({
 					url:'/pages/map/map?source=my&address=' + encodeURIComponent(this.userInfo.address || '')
 				});
+			},
+
+			toZanZhu(){
+				uni.navigateTo({
+					url:'/pages/my/zanZhu'
+				});
+			},
+			
+			updateAddress(newAddress) {
+				this.userInfo.address = newAddress;
+				// 保存到本地存储
+				uni.setStorageSync('selectedAddress', newAddress);
 			},
 			  
 			// 选择头像
@@ -244,6 +274,13 @@
 		display: flex;
 		align-items: center;
 		flex-direction: row;
+	}
+	
+	.address-row .user-data-text {
+	    white-space: nowrap; /* 禁止换行 */
+	    overflow: hidden; /* 隐藏溢出内容 */
+	    text-overflow: ellipsis; /* 超出部分显示省略号 */
+	    max-width: 450rpx;
 	}
 	
 	.location-icon {
@@ -464,5 +501,9 @@
 		font-size: 32rpx;
 		font-weight: 600;
 		color: #7f7f7f;
+	}
+	
+	.text-color{
+		color:#2E7D32;
 	}
 </style>
